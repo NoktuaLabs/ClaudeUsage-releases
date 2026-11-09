@@ -1,0 +1,45 @@
+# Publication d'une version par le robot de GitHub (NOKTUA, 09/11/2026).
+#
+# La release est créée par `github-actions[bot]`, jamais par un compte
+# personnel : aucun nom n'apparaît sur la page publique.
+#
+# Déclenchement : une branche `publication/vX.Y.Z` qui contient, à sa racine,
+# le DMG (*.dmg) et la note de version (NOTE.md). Le workflow crée la release
+# vX.Y.Z (étiquette sur main), y joint le DMG, puis supprime la branche :
+# le binaire ne reste pas dans l'historique du dépôt.
+#
+# Générique : le même fichier sert à tous les dépôts *-releases de NoktuaLabs.
+name: Publier une version
+
+on:
+  push:
+    branches: ['publication/v*']
+
+permissions:
+  contents: write
+
+jobs:
+  publier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Créer la release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          VERSION="${GITHUB_REF_NAME#publication/}"
+          PRODUIT="${GITHUB_REPOSITORY#*/}"; PRODUIT="${PRODUIT%-releases}"
+          shopt -s nullglob
+          DMG=( *.dmg )
+          [[ ${#DMG[@]} -eq 1 ]] || { echo "Il faut exactement un DMG (trouvé : ${#DMG[@]})"; exit 1; }
+          [[ -s NOTE.md ]] || { echo "NOTE.md manquante"; exit 1; }
+          gh release create "$VERSION" "${DMG[0]}" \
+            --title "$PRODUIT ${VERSION#v}" --notes-file NOTE.md --target main
+
+      - name: Supprimer la branche de publication
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X DELETE "repos/${GITHUB_REPOSITORY}/git/refs/heads/${GITHUB_REF_NAME}"
