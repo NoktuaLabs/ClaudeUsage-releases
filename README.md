@@ -28,7 +28,7 @@ ClaudeUsage relève votre quota auprès d'Anthropic à l'intervalle de votre cho
 </tr>
 </table>
 
-Et aussi : la consommation locale de **Claude Code**, par modèle et par projet, lue sur votre Mac.
+Et aussi : la consommation locale de **Claude Code**, par modèle et par projet, lue sur votre Mac, et un thème clair, sombre ou celui du système.
 
 ## Installer
 
